@@ -2,7 +2,6 @@
 
 [![Build Status](https://travis-ci.org/abel533/Mapper.svg?branch=master)](https://travis-ci.org/abel533/Mapper)
 [![Maven central](https://maven-badges.herokuapp.com/maven-central/tk.mybatis/mapper/badge.svg)](https://maven-badges.herokuapp.com/maven-central/tk.mybatis/mapper)
-[![Dependency Status](https://www.versioneye.com/user/projects/593212c722f278006540a1d1/badge.svg?style=flat)](https://www.versioneye.com/user/projects/593212c722f278006540a1d1)
 
 通用Mapper都可以极大的方便开发人员。可以随意的按照自己的需要选择通用方法，还可以很方便的开发自己的通用方法。
 
@@ -12,12 +11,15 @@
 
 **通用 Mapper 支持 Mybatis-3.2.4 及以上版本。**
 
-## Mapper3 拆接口，Mapper4 拆项目
+## [**快速入门 - MyBatis 为什么需要通用 Mapper ?**](https://blog.csdn.net/isea533/article/details/83045335)
 
-此次更新最大的变化是项目结构调整了，将原来的 mapper 拆分成了 core, base, extra, generator, spring 五个子模块，将独立的 mapper-weekend 和 spring-boot-starter 项目添加到 mapper 中作为两个子项目。
+简介: 在早期项目文档中有过类似主题的内容，但是最近我自己看文档的时候发现一个问题，文档虽然很详细，但是并不适合初次接触的人。为了方便第一次听说，第一次尝试的开发人员了解通用 Mapper，补充此文档。
 
-由于更新日志内容太长，请移步 **[4.0 更新日志](https://github.com/abel533/Mapper/wiki/4.0.changelog)** 查看完整内容。
+强烈建议初学者阅读本文，先从整体上了解 通用 Mapper，然后再通过下面的文档更深入的了解。
 
+## [**通用 Mapper 进阶实例：为什么好久都没更新了？**](https://blog.csdn.net/isea533/article/details/104776347)
+
+通过本文，希望读者能有收获，能根据自己的需要设计通用方法，不要只是为了偷懒将自己局限在已有的通用方法中。大而全的通用方法不一定适合自己，根据自己需要选择和设计的通用方法才更满足自己的需要。
 
 ## 项目文档
 

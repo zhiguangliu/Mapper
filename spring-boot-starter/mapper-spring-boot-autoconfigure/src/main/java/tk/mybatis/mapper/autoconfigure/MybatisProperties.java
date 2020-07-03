@@ -22,6 +22,7 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
+import tk.mybatis.spring.annotation.BaseProperties;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,10 +36,10 @@ import java.util.Properties;
  * @author Eddú Meléndez
  * @author Kazuki Shimizu
  */
-@ConfigurationProperties(prefix = MybatisProperties.MYBATIS_PREFIX)
-public class MybatisProperties {
+@ConfigurationProperties(prefix = BaseProperties.MYBATIS_PREFIX)
+public class MybatisProperties extends BaseProperties {
 
-  public static final String MYBATIS_PREFIX = "mybatis";
+  private static final ResourcePatternResolver resourceResolver = new PathMatchingResourcePatternResolver();
 
   /**
    * Location of MyBatis xml config file.
@@ -54,6 +55,12 @@ public class MybatisProperties {
    * Packages to search type aliases. (Package delimiters are ",; \t\n")
    */
   private String typeAliasesPackage;
+
+  /**
+   * The super class for filtering type alias.
+   * If this not specifies, the MyBatis deal as type alias all classes that searched from typeAliasesPackage.
+   */
+  private Class<?> typeAliasesSuperType;
 
   /**
    * Packages to search for type handlers. (Package delimiters are ",; \t\n")
@@ -130,6 +137,20 @@ public class MybatisProperties {
     this.typeAliasesPackage = typeAliasesPackage;
   }
 
+  /**
+   * @since 1.3.3
+   */
+  public Class<?> getTypeAliasesSuperType() {
+    return typeAliasesSuperType;
+  }
+
+  /**
+   * @since 1.3.3
+   */
+  public void setTypeAliasesSuperType(Class<?> typeAliasesSuperType) {
+    this.typeAliasesSuperType = typeAliasesSuperType;
+  }
+
   public boolean isCheckConfigLocation() {
     return this.checkConfigLocation;
   }
@@ -169,18 +190,21 @@ public class MybatisProperties {
   }
 
   public Resource[] resolveMapperLocations() {
-    ResourcePatternResolver resourceResolver = new PathMatchingResourcePatternResolver();
     List<Resource> resources = new ArrayList<Resource>();
     if (this.mapperLocations != null) {
       for (String mapperLocation : this.mapperLocations) {
-        try {
-          Resource[] mappers = resourceResolver.getResources(mapperLocation);
-          resources.addAll(Arrays.asList(mappers));
-        } catch (IOException e) {
-          // ignore
-        }
+        resources.addAll(Arrays.asList(getResources(mapperLocation)));
       }
     }
     return resources.toArray(new Resource[resources.size()]);
   }
+
+  private Resource[] getResources(String location) {
+    try {
+      return resourceResolver.getResources(location);
+    } catch (IOException e) {
+      return new Resource[0];
+    }
+  }
+
 }

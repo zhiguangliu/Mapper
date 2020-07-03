@@ -124,7 +124,11 @@ public class ClassPathMapperScanner extends ClassPathBeanDefinitionScanner {
             @Override
             public boolean match(MetadataReader metadataReader, MetadataReaderFactory metadataReaderFactory) throws IOException {
                 String className = metadataReader.getClassMetadata().getClassName();
-                return className.endsWith("package-info");
+                if(className.endsWith("package-info")){
+                    return true;
+                }
+                return metadataReader.getAnnotationMetadata()
+                    .hasAnnotation("tk.mybatis.mapper.annotation.RegisterMapper");
             }
         });
     }

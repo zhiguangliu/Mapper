@@ -1,5 +1,5 @@
 /**
- *    Copyright 2015-2017 the original author or authors.
+ *    Copyright 2015-2018 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -23,22 +23,22 @@ import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
-import org.mybatis.spring.mapper.MapperFactoryBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.EnvironmentAware;
@@ -54,10 +54,13 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+import tk.mybatis.spring.annotation.BaseProperties;
 import tk.mybatis.spring.mapper.ClassPathMapperScanner;
+import tk.mybatis.spring.mapper.MapperFactoryBean;
+import tk.mybatis.spring.mapper.SpringBootBindUtil;
 
-import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -75,12 +78,12 @@ import java.util.List;
  * @author Eduardo Macarrón
  */
 @org.springframework.context.annotation.Configuration
-@ConditionalOnClass({SqlSessionFactory.class, SqlSessionFactoryBean.class})
-@ConditionalOnBean(DataSource.class)
-@EnableConfigurationProperties({MybatisProperties.class})
+@ConditionalOnClass({ SqlSessionFactory.class, SqlSessionFactoryBean.class })
+@ConditionalOnSingleCandidate(DataSource.class)
+@EnableConfigurationProperties(MybatisProperties.class)
 @AutoConfigureAfter(DataSourceAutoConfiguration.class)
 @AutoConfigureBefore(name = "org.mybatis.spring.boot.autoconfigure.MybatisAutoConfiguration")
-public class MapperAutoConfiguration {
+public class MapperAutoConfiguration implements InitializingBean {
 
     private static final Logger logger = LoggerFactory.getLogger(MapperAutoConfiguration.class);
 
@@ -95,10 +98,10 @@ public class MapperAutoConfiguration {
     private final List<ConfigurationCustomizer> configurationCustomizers;
 
     public MapperAutoConfiguration(MybatisProperties properties,
-                                   ObjectProvider<Interceptor[]> interceptorsProvider,
-                                   ResourceLoader resourceLoader,
-                                   ObjectProvider<DatabaseIdProvider> databaseIdProvider,
-                                   ObjectProvider<List<ConfigurationCustomizer>> configurationCustomizersProvider) {
+                                    ObjectProvider<Interceptor[]> interceptorsProvider,
+                                    ResourceLoader resourceLoader,
+                                    ObjectProvider<DatabaseIdProvider> databaseIdProvider,
+                                    ObjectProvider<List<ConfigurationCustomizer>> configurationCustomizersProvider) {
         this.properties = properties;
         this.interceptors = interceptorsProvider.getIfAvailable();
         this.resourceLoader = resourceLoader;
@@ -106,8 +109,12 @@ public class MapperAutoConfiguration {
         this.configurationCustomizers = configurationCustomizersProvider.getIfAvailable();
     }
 
-    @PostConstruct
-    public void checkConfigFileExists() {
+    @Override
+    public void afterPropertiesSet() {
+        checkConfigFileExists();
+    }
+
+    private void checkConfigFileExists() {
         if (this.properties.isCheckConfigLocation() && StringUtils.hasText(this.properties.getConfigLocation())) {
             Resource resource = this.resourceLoader.getResource(this.properties.getConfigLocation());
             Assert.state(resource.exists(), "Cannot find config location: " + resource
@@ -124,16 +131,7 @@ public class MapperAutoConfiguration {
         if (StringUtils.hasText(this.properties.getConfigLocation())) {
             factory.setConfigLocation(this.resourceLoader.getResource(this.properties.getConfigLocation()));
         }
-        Configuration configuration = this.properties.getConfiguration();
-        if (configuration == null && !StringUtils.hasText(this.properties.getConfigLocation())) {
-            configuration = new Configuration();
-        }
-        if (configuration != null && !CollectionUtils.isEmpty(this.configurationCustomizers)) {
-            for (ConfigurationCustomizer customizer : this.configurationCustomizers) {
-                customizer.customize(configuration);
-            }
-        }
-        factory.setConfiguration(configuration);
+        applyConfiguration(factory);
         if (this.properties.getConfigurationProperties() != null) {
             factory.setConfigurationProperties(this.properties.getConfigurationProperties());
         }
@@ -146,6 +144,9 @@ public class MapperAutoConfiguration {
         if (StringUtils.hasLength(this.properties.getTypeAliasesPackage())) {
             factory.setTypeAliasesPackage(this.properties.getTypeAliasesPackage());
         }
+        if (this.properties.getTypeAliasesSuperType() != null) {
+            factory.setTypeAliasesSuperType(this.properties.getTypeAliasesSuperType());
+        }
         if (StringUtils.hasLength(this.properties.getTypeHandlersPackage())) {
             factory.setTypeHandlersPackage(this.properties.getTypeHandlersPackage());
         }
@@ -154,6 +155,19 @@ public class MapperAutoConfiguration {
         }
 
         return factory.getObject();
+    }
+
+    private void applyConfiguration(SqlSessionFactoryBean factory) {
+        Configuration configuration = this.properties.getConfiguration();
+        if (configuration == null && !StringUtils.hasText(this.properties.getConfigLocation())) {
+            configuration = new Configuration();
+        }
+        if (configuration != null && !CollectionUtils.isEmpty(this.configurationCustomizers)) {
+            for (ConfigurationCustomizer customizer : this.configurationCustomizers) {
+                customizer.customize(configuration);
+            }
+        }
+        factory.setConfiguration(configuration);
     }
 
     @Bean
@@ -194,15 +208,19 @@ public class MapperAutoConfiguration {
                 if (this.resourceLoader != null) {
                     scanner.setResourceLoader(this.resourceLoader);
                 }
-
                 List<String> packages = AutoConfigurationPackages.get(this.beanFactory);
                 if (logger.isDebugEnabled()) {
                     for (String pkg : packages) {
                         logger.debug("Using auto-configuration base package '{}'", pkg);
                     }
                 }
-
-                scanner.setAnnotationClass(Mapper.class);
+                BaseProperties properties = SpringBootBindUtil.bind(environment, BaseProperties.class, BaseProperties.MYBATIS_PREFIX);
+                if(properties != null && properties.getBasePackages() != null && properties.getBasePackages().length > 0){
+                    packages.addAll(Arrays.asList(properties.getBasePackages()));
+                } else {
+                    //设置了包名的情况下，不需要指定该注解
+                    scanner.setAnnotationClass(Mapper.class);
+                }
                 scanner.registerFilters();
                 scanner.doScan(StringUtils.toStringArray(packages));
             } catch (IllegalStateException ex) {
@@ -235,11 +253,11 @@ public class MapperAutoConfiguration {
      * on the same component-scanning path as Spring Boot itself.
      */
     @org.springframework.context.annotation.Configuration
-    @Import({AutoConfiguredMapperScannerRegistrar.class})
+    @Import({ AutoConfiguredMapperScannerRegistrar.class })
     @ConditionalOnMissingBean(MapperFactoryBean.class)
-    public static class MapperScannerRegistrarNotFoundConfiguration {
+    public static class MapperScannerRegistrarNotFoundConfiguration implements InitializingBean {
 
-        @PostConstruct
+        @Override
         public void afterPropertiesSet() {
             logger.debug("No {} found.", MapperFactoryBean.class.getName());
         }

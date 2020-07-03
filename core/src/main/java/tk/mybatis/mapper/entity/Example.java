@@ -221,6 +221,10 @@ public class Example implements IDynamicTableName {
         distinct = false;
     }
 
+    public Map<String, EntityColumn> getPropertyMap() {
+        return propertyMap;
+    }
+
     public static class OrderBy {
         //属性和列对应
         protected Map<String, EntityColumn> propertyMap;
@@ -491,6 +495,9 @@ public class Example implements IDynamicTableName {
          * @Date 2015年7月17日 下午12:48:08
          */
         public Criteria andEqualTo(Object param) {
+            if(param == null){
+                return (Criteria) this;
+            }
             MetaObject metaObject = MetaObjectUtil.forObject(param);
             String[] properties = metaObject.getGetterNames();
             for (String property : properties) {

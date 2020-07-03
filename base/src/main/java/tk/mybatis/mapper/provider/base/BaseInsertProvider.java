@@ -47,12 +47,17 @@ public class BaseInsertProvider extends MapperTemplate {
         StringBuilder sql = new StringBuilder();
         //获取全部列
         Set<EntityColumn> columnList = EntityHelper.getColumns(entityClass);
+        EntityColumn logicDeleteColumn = SqlHelper.getLogicDeleteColumn(entityClass);
         processKey(sql, entityClass, ms, columnList);
         sql.append(SqlHelper.insertIntoTable(entityClass, tableName(entityClass)));
         sql.append(SqlHelper.insertColumns(entityClass, false, false, false));
         sql.append("<trim prefix=\"VALUES(\" suffix=\")\" suffixOverrides=\",\">");
         for (EntityColumn column : columnList) {
             if (!column.isInsertable()) {
+                continue;
+            }
+            if (logicDeleteColumn != null && logicDeleteColumn == column) {
+                sql.append(SqlHelper.getLogicDeletedValue(column, false)).append(",");
                 continue;
             }
             //优先使用传入的属性值,当原属性property!=null时，用原属性
@@ -80,6 +85,7 @@ public class BaseInsertProvider extends MapperTemplate {
         StringBuilder sql = new StringBuilder();
         //获取全部列
         Set<EntityColumn> columnList = EntityHelper.getColumns(entityClass);
+        EntityColumn logicDeleteColumn = SqlHelper.getLogicDeleteColumn(entityClass);
         processKey(sql, entityClass, ms, columnList);
         sql.append(SqlHelper.insertIntoTable(entityClass, tableName(entityClass)));
         sql.append("<trim prefix=\"(\" suffix=\")\" suffixOverrides=\",\">");
@@ -88,15 +94,24 @@ public class BaseInsertProvider extends MapperTemplate {
                 continue;
             }
             if (column.isIdentity()) {
-                sql.append(column.getColumn() + ",");
+                sql.append(column.getColumn()).append(",");
             } else {
+                if (logicDeleteColumn != null && logicDeleteColumn == column) {
+                    sql.append(column.getColumn()).append(",");
+                    continue;
+                }
                 sql.append(SqlHelper.getIfNotNull(column, column.getColumn() + ",", isNotEmpty()));
             }
         }
         sql.append("</trim>");
+
         sql.append("<trim prefix=\"VALUES(\" suffix=\")\" suffixOverrides=\",\">");
         for (EntityColumn column : columnList) {
             if (!column.isInsertable()) {
+                continue;
+            }
+            if (logicDeleteColumn != null && logicDeleteColumn == column) {
+                sql.append(SqlHelper.getLogicDeletedValue(column, false)).append(",");
                 continue;
             }
             //优先使用传入的属性值,当原属性property!=null时，用原属性
