@@ -1,8 +1,6 @@
-# MyBatis 通用 Mapper4
+# MyBatis 通用 Mapper6 来了🎉🎉🎉
 
-[![Build Status](https://travis-ci.org/abel533/Mapper.svg?branch=master)](https://travis-ci.org/abel533/Mapper)
-[![Maven central](https://maven-badges.herokuapp.com/maven-central/tk.mybatis/mapper/badge.svg)](https://maven-badges.herokuapp.com/maven-central/tk.mybatis/mapper)
-[![Dependency Status](https://www.versioneye.com/user/projects/593212c722f278006540a1d1/badge.svg?style=flat)](https://www.versioneye.com/user/projects/593212c722f278006540a1d1)
+[![Maven Central](https://img.shields.io/maven-central/v/tk.mybatis/mapper)](https://central.sonatype.com/namespace/tk.mybatis)
 
 通用Mapper都可以极大的方便开发人员。可以随意的按照自己的需要选择通用方法，还可以很方便的开发自己的通用方法。
 
@@ -10,18 +8,58 @@
 
 支持单表操作，不支持通用的多表联合查询。
 
-**通用 Mapper 支持 Mybatis-3.2.4 及以上版本。**
+## 🌟 赞助支持
 
-## Mapper3 拆接口，Mapper4 拆项目
+本项目是基于MIT协议的开源项目，无任何商业盈利，**持续的维护、迭代与兼容升级全靠各位开发者和赞助者的支持**。
 
-此次更新最大的变化是项目结构调整了，将原来的 mapper 拆分成了 core, base, extra, generator, spring 五个子模块，将独立的 mapper-weekend 和 spring-boot-starter 项目添加到 mapper 中作为两个子项目。
+[![Easysearch - ES 国产化的首选替代方案](https://infinilabs.cn//img/download/media-assets/easysearch-banner-3.svg)](https://easysearch.cn/)
 
-由于更新日志内容太长，请移步 **[4.0 更新日志](https://github.com/abel533/Mapper/wiki/4.0.changelog)** 查看完整内容。
+## 版本匹配说明
 
+不同分支支持不同的 Spring Boot 版本，请根据项目实际情况选择对应分支：
+
+| 分支 | Spring Boot 版本 | JDK 版本 | Mapper 版本 |
+|------|------------------|----------|-------------|
+| master | Spring Boot 4.x | JDK 17+ | 6.0.0+ |
+| 5.x | Spring Boot 3.x | JDK 17+ | 5.0.0 |
+| 4.3.x | Spring Boot 2.x | JDK 8+ | 4.3.x |
+
+## 基于 JDK 17 + Jakarta JPA 注解 + Spring Boot 4
+
+配置完全兼容，需要使用新版本的 JPA 注解，同步更新（copy） mybatis-spring 4.0.0 和 mybatis-spring-boot-starter 4.0.0。
+
+此次更新主要是依赖的更新，适配最新的 Spring Boot 4.0.2，提供更好的兼容性和稳定性。
+
+```xml
+<dependency>
+    <groupId>tk.mybatis</groupId>
+    <artifactId>mapper</artifactId>
+    <version>6.0.0</version>
+</dependency>
+```
+
+## 推荐新版本 mybatis-mapper
+
+如果你要在新项目中使用，可以看看新版本的 mybatis-mapper，完全作为 mybatis 扩展存在，
+不修改 mybatis, mybatis-spring, mybatis-spring-boot-starter 任何代码，不需要额外配置，可以快速上手。
+
+- mybatis-mapper: https://github.com/mybatis-mapper/mapper
+- mybatis-mapper 文档: https://mapper.mybatis.io
+- [mybatis-mapper 快速入门](https://mapper.mybatis.io/docs/1.getting-started.html#%E4%BB%8B%E7%BB%8D)
+
+## [**快速入门 - MyBatis 为什么需要通用 Mapper ?**](https://blog.csdn.net/isea533/article/details/83045335)
+
+简介: 在早期项目文档中有过类似主题的内容，但是最近我自己看文档的时候发现一个问题，文档虽然很详细，但是并不适合初次接触的人。为了方便第一次听说，第一次尝试的开发人员了解通用 Mapper，补充此文档。
+
+强烈建议初学者阅读本文，先从整体上了解 通用 Mapper，然后再通过下面的文档更深入的了解。
+
+## [**通用 Mapper 进阶实例：为什么好久都没更新了？**](https://blog.csdn.net/isea533/article/details/104776347)
+
+通过本文，希望读者能有收获，能根据自己的需要设计通用方法，不要只是为了偷懒将自己局限在已有的通用方法中。大而全的通用方法不一定适合自己，根据自己需要选择和设计的通用方法才更满足自己的需要。
 
 ## 项目文档
 
-- [文档 - Gitee](https://gitee.com/free/Mapper/wikis/Home)  
+- [文档 - Gitee](https://gitee.com/free/Mapper/wikis/Home)
 
 - [文档 - GitHub](https://github.com/abel533/Mapper/wiki)
 
@@ -31,37 +69,34 @@
 
 - [更新日志 - GitHub](https://github.com/abel533/Mapper/wiki/changelog)
 
+## 微信公众号
+
+<img src="wx-mybatis.webp" width="250"/>
+
 ## 作者信息
-   
-   MyBatis 工具网站:[http://mybatis.tk](http://www.mybatis.tk)
-   
-   作者博客：http://blog.csdn.net/isea533
-   
-   作者邮箱： abel533@gmail.com
-   
-   如需加群，请通过 http://mybatis.tk 首页按钮加群。
-   
-   推荐使用Mybatis分页插件:[PageHelper分页插件](https://github.com/pagehelper/Mybatis-PageHelper)
-   
-## 作者新书：《MyBatis 从入门到精通》
+
+MyBatis 工具网站：[https://mybatis.io](https://mybatis.io)
+
+作者博客：http://blog.csdn.net/isea533 ，http://blog.mybatis.io
+
+作者邮箱：abel533@gmail.com
+
+推荐使用Mybatis分页插件：[PageHelper分页插件](https://github.com/pagehelper/Mybatis-PageHelper)
+
+## 《MyBatis 从入门到精通》
 
 ![MyBatis 从入门到精通](https://github.com/mybatis-book/book/raw/master/book.png)
 
 ### 简介
 
-本书中从一个简单的 MyBatis 查询入手，搭建起学习 MyBatis 的基础开发环境。
-通过全面的示例代码和测试讲解了在 MyBatis XML 方式和注解方式中进行增、删、改、查操作的基本用法，介绍了动态 SQL 在不同方面的应用以及在使用过程中的最佳实践方案。
-针对 MyBatis 高级映射、存储过程和类型处理器提供了丰富的示例，通过自下而上的方法使读者更好地理解和掌握MyBatis 的高级用法，同时针对 MyBatis 的代码生成器提供了详细的配置介绍。
-此外，本书还提供了缓存配置、插件开发、Spring、Spring Boot 集成的详细内容。
-最后通过介绍 Git 和 GitHub 让读者了解MyBatis 开源项目，通过对 MyBatis 源码和测试用例的讲解让读者更好掌握 MyBatis。
+本书中从一个简单的 MyBatis 查询入手，搭建起学习 MyBatis 的基础开发环境。 通过全面的示例代码和测试讲解了在 MyBatis XML 方式和注解方式中进行增、删、改、查操作的基本用法，介绍了动态 SQL
+在不同方面的应用以及在使用过程中的最佳实践方案。 针对 MyBatis 高级映射、存储过程和类型处理器提供了丰富的示例，通过自下而上的方法使读者更好地理解和掌握MyBatis 的高级用法，同时针对 MyBatis
+的代码生成器提供了详细的配置介绍。 此外，本书还提供了缓存配置、插件开发、Spring、Spring Boot 集成的详细内容。 最后通过介绍 Git 和 GitHub 让读者了解MyBatis 开源项目，通过对 MyBatis
+源码和测试用例的讲解让读者更好掌握 MyBatis。
 
 ### 购买地址：
 
 - [京东](https://item.jd.com/12103309.html)
-
-- [当当](http://product.dangdang.com/25098208.html)
-
-- [亚马逊](https://www.amazon.cn/MyBatis从入门到精通-刘增辉/dp/B072RC11DM/ref=sr_1_18?ie=UTF8&qid=1498007125&sr=8-18&keywords=mybatis)
 
 ### 相关介绍
 

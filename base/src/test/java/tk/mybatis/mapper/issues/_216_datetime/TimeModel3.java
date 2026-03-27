@@ -3,8 +3,8 @@ package tk.mybatis.mapper.issues._216_datetime;
 import org.apache.ibatis.type.JdbcType;
 import tk.mybatis.mapper.annotation.ColumnType;
 
-import javax.persistence.Id;
-import javax.persistence.Table;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -17,11 +17,11 @@ public class TimeModel3 implements Serializable {
     @Id
     private Integer id;
     @ColumnType(jdbcType = JdbcType.DATE)
-    private Date    testDate;
+    private Date testDate;
     @ColumnType(jdbcType = JdbcType.TIME)
-    private Date    testTime;
+    private Date testTime;
     @ColumnType(jdbcType = JdbcType.TIMESTAMP)
-    private Date    testDatetime;
+    private Date testDatetime;
 
     public Integer getId() {
         return id;

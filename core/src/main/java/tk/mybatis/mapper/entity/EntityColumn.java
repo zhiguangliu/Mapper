@@ -25,7 +25,6 @@
 package tk.mybatis.mapper.entity;
 
 import org.apache.ibatis.type.JdbcType;
-import org.apache.ibatis.type.TypeHandler;
 import tk.mybatis.mapper.code.ORDER;
 import tk.mybatis.mapper.genid.GenId;
 import tk.mybatis.mapper.util.StringUtil;
@@ -41,7 +40,7 @@ public class EntityColumn {
     private String column;
     private Class<?> javaType;
     private JdbcType jdbcType;
-    private Class<? extends TypeHandler<?>> typeHandler;
+    private Class<?> typeHandler;
     private boolean id = false;
     private boolean identity = false;
     private Class<? extends GenId> genIdClass;
@@ -50,6 +49,7 @@ public class EntityColumn {
     private String generator;
     //排序
     private String orderBy;
+    private int orderPriority;
     //可插入
     private boolean insertable = true;
     //可更新
@@ -72,7 +72,7 @@ public class EntityColumn {
     }
 
     /**
-     * 返回格式如:colum = #{age,jdbcType=NUMERIC,typeHandler=MyTypeHandler}
+     * 返回格式如:colum = #{entityName.age,jdbcType=NUMERIC,typeHandler=MyTypeHandler}
      *
      * @param entityName
      * @return
@@ -139,13 +139,13 @@ public class EntityColumn {
         //为了以后定制类型处理方式，你也可以指定一个特殊的类型处理器类，例如枚举
         if (this.typeHandler != null) {
             sb.append(", typeHandler=");
-            sb.append(this.typeHandler.getCanonicalName());
+            sb.append(this.typeHandler.getName());
         }
         //3.4.0 以前的 mybatis 无法获取父类中泛型的 javaType，所以如果使用低版本，就需要设置 useJavaType = true
         //useJavaType 默认 false,没有 javaType 限制时，对 ByPrimaryKey 方法的参数校验就放宽了，会自动转型
         if (useJavaType && !this.javaType.isArray()) {//当类型为数组时，不设置javaType#103
             sb.append(", javaType=");
-            sb.append(javaType.getCanonicalName());
+            sb.append(javaType.getName());
         }
         sb.append("}");
         if (StringUtil.isNotEmpty(separator)) {
@@ -271,11 +271,11 @@ public class EntityColumn {
         this.table = table;
     }
 
-    public Class<? extends TypeHandler<?>> getTypeHandler() {
+    public Class<?> getTypeHandler() {
         return typeHandler;
     }
 
-    public void setTypeHandler(Class<? extends TypeHandler<?>> typeHandler) {
+    public void setTypeHandler(Class<?> typeHandler) {
         this.typeHandler = typeHandler;
     }
 
@@ -343,6 +343,14 @@ public class EntityColumn {
         this.useJavaType = useJavaType;
     }
 
+    public int getOrderPriority() {
+        return orderPriority;
+    }
+
+    public void setOrderPriority(int orderPriority) {
+        this.orderPriority = orderPriority;
+    }
+
     @Override
     public String toString() {
         return "EntityColumn{" +
@@ -357,6 +365,7 @@ public class EntityColumn {
                 ", blob=" + blob +
                 ", generator='" + generator + '\'' +
                 ", orderBy='" + orderBy + '\'' +
+                ", orderPriority='" + orderPriority + '\'' +
                 ", insertable=" + insertable +
                 ", updatable=" + updatable +
                 ", order=" + order +

@@ -31,19 +31,18 @@ import java.util.Set;
  * Since different databases have different reserved words, this list is
  * inclusive of many different databases - so it may include words that are not
  * reserved in some databases.
- * 
+ *
  * <p>This list is based on the list from Drupal Handbook:
  * http://drupal.org/node/141051 With additions for DB2
- * 
+ *
  * @author Jeff Butler
- * 
  */
 public class SqlReservedWords {
 
     private static Set<String> RESERVED_WORDS;
 
     static {
-        String[] words = { "A", //$NON-NLS-1$
+        String[] words = {"A", //$NON-NLS-1$
                 "ABORT", //$NON-NLS-1$
                 "ABS", //$NON-NLS-1$
                 "ABSOLUTE", //$NON-NLS-1$
@@ -933,6 +932,7 @@ public class SqlReservedWords {
                 "VCAT", // DB2 //$NON-NLS-1$
                 "VERBOSE", //$NON-NLS-1$
                 "VIEW", // DB2 //$NON-NLS-1$
+                "VIRTUAL", //MySQL #272
                 "VOLATILE", //$NON-NLS-1$
                 "VOLUMES", // DB2 //$NON-NLS-1$
                 "WAITFOR", //$NON-NLS-1$

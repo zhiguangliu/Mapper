@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
-import tk.mybatis.mapper.MapperException;
 import tk.mybatis.mapper.common.Mapper;
 import tk.mybatis.mapper.entity.Config;
 import tk.mybatis.mapper.mapperhelper.MapperHelper;
@@ -70,7 +69,7 @@ public class SpringAnnotationTest {
         Assert.assertEquals(183, countries.size());
     }
 
-    @Test(expected = MapperException.class)
+    @Test(expected = Exception.class)
     public void testMyBatisConfigPropertiesError() {
         applicationContext.register(MyBatisConfigPropertiesError.class);
         startContext();
@@ -117,10 +116,10 @@ public class SpringAnnotationTest {
 
     @Configuration
     @MapperScan(value = "tk.mybatis.mapper.annotation",
-        properties = {
-                "mappers=tk.mybatis.mapper.common.Mapper",
-                "notEmpty=true"
-        }
+            properties = {
+                    "mappers=tk.mybatis.mapper.common.Mapper",
+                    "notEmpty=true"
+            }
     )
     public static class MyBatisConfigProperties {
         @Bean
@@ -145,11 +144,11 @@ public class SpringAnnotationTest {
 
     @Configuration
     @MapperScan(value = "tk.mybatis.mapper.annotation",
-        properties = {
-                //参数配置错误
-                "mapperstk.mybatis.mapper.common.Mapper",
-                "notEmpty=true"
-        }
+            properties = {
+                    //参数配置错误
+                    "mapperstk.mybatis.mapper.common.Mapper",
+                    "notEmpty=true"
+            }
     )
     public static class MyBatisConfigPropertiesError {
         @Bean

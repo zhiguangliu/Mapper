@@ -1,7 +1,7 @@
 package tk.mybatis.mapper.issues._216_datetime;
 
-import javax.persistence.Id;
-import javax.persistence.Table;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -13,9 +13,9 @@ import java.util.Date;
 public class TimeModel2 implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
-    private Integer   id;
-    private Date      testDate;
-    private Date      testTime;
+    private Integer id;
+    private Date testDate;
+    private Date testTime;
     private Timestamp testDatetime;
 
     public Integer getId() {

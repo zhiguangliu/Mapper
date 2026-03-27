@@ -44,16 +44,16 @@ public class Config {
     public static final String PREFIX = "mapper";
 
     private List<Class> mappers = new ArrayList<Class>();
-    private String  IDENTITY;
+    private String IDENTITY;
     private boolean BEFORE;
-    private String  seqFormat;
-    private String  catalog;
-    private String  schema;
+    private String seqFormat;
+    private String catalog;
+    private String schema;
     //校验调用Example方法时，Example(entityClass)和Mapper<EntityClass>是否一致
     private boolean checkExampleEntityClass;
     //使用简单类型
     //3.5.0 后默认值改为 true
-    private boolean useSimpleType    = true;
+    private boolean useSimpleType = true;
     /**
      * @since 3.5.0
      */
@@ -87,9 +87,19 @@ public class Config {
      */
     private boolean safeUpdate;
     /**
+     * 控制通过主键进行操作（select, update, delete）时，是否拼接逻辑删除字段的条件（默认 true，保持兼容）
+     * <p>
+     * 设置为 false 时，通过主键查询或操作时不会追加 logicDeleteField = 0 的条件
+     */
+    private boolean logicDeleteByKey = true;
+    /**
      * 是否设置 javaType
      */
     private boolean useJavaType;
+    /**
+     * 是否自动处理 Mapper 接口中其他手写指定 resultType 的返回结果类型为 resultMap
+     */
+    private boolean enableBaseResultMapFlag;
 
     public String getCatalog() {
         return catalog;
@@ -308,12 +318,28 @@ public class Config {
         this.safeUpdate = safeUpdate;
     }
 
+    public boolean isLogicDeleteByKey() {
+        return logicDeleteByKey;
+    }
+
+    public void setLogicDeleteByKey(boolean logicDeleteByKey) {
+        this.logicDeleteByKey = logicDeleteByKey;
+    }
+
     public boolean isUseJavaType() {
         return useJavaType;
     }
 
     public void setUseJavaType(boolean useJavaType) {
         this.useJavaType = useJavaType;
+    }
+
+    public boolean isEnableBaseResultMapFlag() {
+        return enableBaseResultMapFlag;
+    }
+
+    public void setEnableBaseResultMapFlag(boolean enableBaseResultMapFlag) {
+        this.enableBaseResultMapFlag = enableBaseResultMapFlag;
     }
 
     /**
@@ -393,10 +419,15 @@ public class Config {
         if (StringUtil.isNotEmpty(wrapKeyword)) {
             this.wrapKeyword = wrapKeyword;
         }
-        //安全删除
+        //safeDelete
         this.safeDelete = Boolean.valueOf(properties.getProperty("safeDelete"));
-        //安全更新
+        //safeUpdate
         this.safeUpdate = Boolean.valueOf(properties.getProperty("safeUpdate"));
+        // 控制通过主键进行操作（select, update, delete）时，是否拼接逻辑删除字段的条件（默认 true，保持兼容）
+        String logicDeleteByKey = properties.getProperty("logicDeleteByKey");
+        if (StringUtil.isNotEmpty(logicDeleteByKey)) {
+            this.logicDeleteByKey = Boolean.valueOf(logicDeleteByKey);
+        }
         //是否设置 javaType，true 时如 {id, javaType=java.lang.Long}
         this.useJavaType = Boolean.valueOf(properties.getProperty("useJavaType"));
     }

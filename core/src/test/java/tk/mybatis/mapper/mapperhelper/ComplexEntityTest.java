@@ -15,8 +15,8 @@ import tk.mybatis.mapper.code.Style;
 import tk.mybatis.mapper.entity.Config;
 import tk.mybatis.mapper.entity.EntityTable;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
+import jakarta.persistence.Column;
+import jakarta.persistence.Id;
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -152,19 +152,19 @@ public class ComplexEntityTest {
         sqlBuilder.append(SqlHelper.fromTable(entityClass, entityTable.getName()));
         sqlBuilder.append(SqlHelper.whereAllIfColumns(entityClass, config.isNotEmpty()));
         final String sql = sqlBuilder.toString();
-        Assert.assertEquals("SELECT id,user_name,address,state  FROM user " +
+        Assert.assertEquals("SELECT address,id,state,user_name  FROM user " +
                 "<where>" +
+                "<if test=\"address != null\"> AND address = #{address, typeHandler=tk.mybatis.mapper.mapperhelper.ComplexEntityTest$AddressHandler}</if>" +
                 "<if test=\"id != null\"> AND id = #{id}</if>" +
-                "<if test=\"userName != null\"> AND user_name = #{userName}</if>" +
-                "<if test=\"address != null\"> AND address = #{address, typeHandler=tk.mybatis.mapper.mapperhelper.ComplexEntityTest.AddressHandler}</if>" +
-                "<if test=\"state != null\"> AND state = #{state}</if></where>", sql);
+                "<if test=\"state != null\"> AND state = #{state}</if>" +
+                "<if test=\"userName != null\"> AND user_name = #{userName}</if></where>", sql);
 
         final ResultMap resultMap = entityTable.getResultMap(configuration);
         final List<ResultMapping> resultMappings = resultMap.getResultMappings();
-        final ResultMapping idMapping = resultMappings.get(0);
-        final ResultMapping userNameMapping = resultMappings.get(1);
-        final ResultMapping addressMapping = resultMappings.get(2);
-        final ResultMapping stateMapping = resultMappings.get(3);
+        final ResultMapping addressMapping = resultMappings.get(0);
+        final ResultMapping idMapping = resultMappings.get(1);
+        final ResultMapping stateMapping = resultMappings.get(2);
+        final ResultMapping userNameMapping = resultMappings.get(3);
 
         Assert.assertEquals("id", idMapping.getColumn());
         Assert.assertEquals("id", idMapping.getProperty());

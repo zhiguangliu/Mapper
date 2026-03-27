@@ -24,15 +24,16 @@
 
 package tk.mybatis.mapper.mapperhelper;
 
+import org.apache.ibatis.mapping.MappedStatement;
 import tk.mybatis.mapper.MapperException;
 import tk.mybatis.mapper.entity.Config;
 import tk.mybatis.mapper.entity.EntityColumn;
 import tk.mybatis.mapper.entity.EntityTable;
 import tk.mybatis.mapper.mapperhelper.resolve.DefaultEntityResolve;
 import tk.mybatis.mapper.mapperhelper.resolve.EntityResolve;
+import tk.mybatis.mapper.util.MetaObjectUtil;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -65,9 +66,19 @@ public class EntityHelper {
     public static EntityTable getEntityTable(Class<?> entityClass) {
         EntityTable entityTable = entityTableMap.get(entityClass);
         if (entityTable == null) {
-            throw new MapperException("无法获取实体类" + entityClass.getCanonicalName() + "对应的表名!");
+            throw new MapperException("无法获取实体类" + entityClass.getName() + "对应的表名!");
         }
         return entityTable;
+    }
+
+    /**
+     * 获取表对象，如果没有则返回Null
+     *
+     * @param entityClass
+     * @return
+     */
+    public static EntityTable getEntityTableOrNull(Class<?> entityClass) {
+        return entityTableMap.get(entityClass);
     }
 
     /**
@@ -81,14 +92,27 @@ public class EntityHelper {
         if (table.getOrderByClause() != null) {
             return table.getOrderByClause();
         }
-        StringBuilder orderBy = new StringBuilder();
+
+        List<EntityColumn> orderEntityColumns = new ArrayList<EntityColumn>();
         for (EntityColumn column : table.getEntityClassColumns()) {
             if (column.getOrderBy() != null) {
-                if (orderBy.length() != 0) {
-                    orderBy.append(",");
-                }
-                orderBy.append(column.getColumn()).append(" ").append(column.getOrderBy());
+                orderEntityColumns.add(column);
             }
+        }
+
+        Collections.sort(orderEntityColumns, new Comparator<EntityColumn>() {
+            @Override
+            public int compare(EntityColumn o1, EntityColumn o2) {
+                return o1.getOrderPriority() - o2.getOrderPriority();
+            }
+        });
+
+        StringBuilder orderBy = new StringBuilder();
+        for (EntityColumn column : orderEntityColumns) {
+            if (orderBy.length() != 0) {
+                orderBy.append(",");
+            }
+            orderBy.append(column.getColumn()).append(" ").append(column.getOrderBy());
         }
         table.setOrderByClause(orderBy.toString());
         return table.getOrderByClause();
@@ -167,5 +191,24 @@ public class EntityHelper {
      */
     static void setResolve(EntityResolve resolve) {
         EntityHelper.resolve = resolve;
+    }
+
+    /**
+     * 通过反射设置MappedStatement的keyProperties字段值
+     *
+     * @param pkColumns 所有的主键字段
+     * @param ms        MappedStatement
+     */
+    public static void setKeyProperties(Set<EntityColumn> pkColumns, MappedStatement ms) {
+        if (pkColumns == null || pkColumns.isEmpty()) {
+            return;
+        }
+
+        List<String> keyProperties = new ArrayList<String>(pkColumns.size());
+        for (EntityColumn column : pkColumns) {
+            keyProperties.add(column.getProperty());
+        }
+
+        MetaObjectUtil.forObject(ms).setValue("keyProperties", keyProperties.toArray(new String[]{}));
     }
 }

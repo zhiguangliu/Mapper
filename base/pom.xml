@@ -28,23 +28,22 @@
     <parent>
         <groupId>tk.mybatis</groupId>
         <artifactId>mapper-modules</artifactId>
-        <version>1.0.5</version>
+        <version>${revision}</version>
     </parent>
     <artifactId>mapper-base</artifactId>
     <packaging>jar</packaging>
 
     <name>mapper-base</name>
     <description>Mybatis 通用 Mapper 基础方法实现</description>
-    <url>http://www.mybatis.tk</url>
+    <url>https://mybatis.io</url>
 
     <dependencies>
         <!--必须依赖-->
         <dependency>
-            <groupId>javax.persistence</groupId>
-            <artifactId>persistence-api</artifactId>
-            <optional>true</optional>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
         </dependency>
-		
+
         <dependency>
             <groupId>tk.mybatis</groupId>
             <artifactId>mapper-core</artifactId>
@@ -59,9 +58,9 @@
         </dependency>
 
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.45</version>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <version>8.0.33</version>
             <scope>test</scope>
         </dependency>
 

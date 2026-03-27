@@ -39,7 +39,7 @@ import java.util.Set;
  * @author liuzh
  */
 public class UpdateByDifferProvider extends MapperTemplate {
-    public static final String OLD   = "old";
+    public static final String OLD = "old";
     public static final String NEWER = "newer";
 
     public UpdateByDifferProvider(Class<?> mapperClass, MapperHelper mapperHelper) {
@@ -96,7 +96,7 @@ public class UpdateByDifferProvider extends MapperTemplate {
         for (EntityColumn column : columnSet) {
             if (column.getEntityField().isAnnotationPresent(Version.class)) {
                 if (hasVersion) {
-                    throw new VersionException(entityClass.getCanonicalName() + " 中包含多个带有 @Version 注解的字段，一个类中只能存在一个带有 @Version 注解的字段!");
+                    throw new VersionException(entityClass.getName() + " 中包含多个带有 @Version 注解的字段，一个类中只能存在一个带有 @Version 注解的字段!");
                 }
                 hasVersion = true;
                 result = " AND " + column.getColumnEqualsHolder(NEWER);
@@ -122,26 +122,23 @@ public class UpdateByDifferProvider extends MapperTemplate {
         for (EntityColumn column : columnSet) {
             if (column.getEntityField().isAnnotationPresent(Version.class)) {
                 if (versionColumn != null) {
-                    throw new VersionException(entityClass.getCanonicalName() + " 中包含多个带有 @Version 注解的字段，一个类中只能存在一个带有 @Version 注解的字段!");
+                    throw new VersionException(entityClass.getName() + " 中包含多个带有 @Version 注解的字段，一个类中只能存在一个带有 @Version 注解的字段!");
                 }
                 versionColumn = column;
             }
             if (!column.isId() && column.isUpdatable()) {
                 if (column == versionColumn) {
                     Version version = versionColumn.getEntityField().getAnnotation(Version.class);
-                    String versionClass = version.nextVersion().getCanonicalName();
+                    String versionClass = version.nextVersion().getName();
                     //version = ${@tk.mybatis.mapper.version@nextVersionClass("versionClass", version)}
                     sql.append(column.getColumn())
                             .append(" = ${@tk.mybatis.mapper.version.VersionUtil@nextVersion(")
                             .append("@").append(versionClass).append("@class, ")
-                            .append(column.getProperty()).append(")},");
+                            .append(NEWER).append('.').append(column.getProperty()).append(")},");
                 } else {
                     //if old.xx != newer.xx
                     sql.append(getIfNotEqual(column, column.getColumnEqualsHolder(NEWER) + ","));
                 }
-            } else if (column.isId() && column.isUpdatable()) {
-                //set id = id,
-                sql.append(column.getColumn()).append(" = ").append(column.getColumn()).append(",");
             }
         }
         sql.append("</set>");

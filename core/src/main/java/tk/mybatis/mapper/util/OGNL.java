@@ -25,16 +25,15 @@
 package tk.mybatis.mapper.util;
 
 import tk.mybatis.mapper.MapperException;
+import tk.mybatis.mapper.annotation.LogicDelete;
 import tk.mybatis.mapper.entity.EntityColumn;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.IDynamicTableName;
 import tk.mybatis.mapper.mapperhelper.EntityHelper;
+import tk.mybatis.mapper.mapperhelper.SqlHelper;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * OGNL静态方法
@@ -56,16 +55,16 @@ public abstract class OGNL {
         if (parameter != null && parameter instanceof Example && StringUtil.isNotEmpty(entityFullName)) {
             Example example = (Example) parameter;
             Class<?> entityClass = example.getEntityClass();
-            if (!entityClass.getCanonicalName().equals(entityFullName)) {
+            if (!entityClass.getName().equals(entityFullName)) {
                 throw new MapperException("当前 Example 方法对应实体为:" + entityFullName
-                        + ", 但是参数 Example 中的 entityClass 为:" + entityClass.getCanonicalName());
+                        + ", 但是参数 Example 中的 entityClass 为:" + entityClass.getName());
             }
         }
         return true;
     }
 
     /**
-     * 检查 paremeter 对象中指定的 fields 是否全是 null，如果是则抛出异常
+     * 检查 parameter 对象中指定的 fields 是否全是 null，如果是则抛出异常
      *
      * @param parameter
      * @param fields
@@ -92,7 +91,21 @@ public abstract class OGNL {
     }
 
     /**
-     * 检查 paremeter 对象中指定的 fields 是否全是 null，如果是则抛出异常
+     * 校验集合类型参数不能为空
+     *
+     * @param parameter
+     * @param error
+     * @return
+     */
+    public static boolean notEmptyCollectionCheck(Object parameter, String error) {
+        if (parameter == null || (parameter instanceof Collection && ((Collection) parameter).size() == 0)) {
+            throw new IllegalArgumentException(error);
+        }
+        return true;
+    }
+
+    /**
+     * 检查 parameter 对象中指定的 fields 是否全是 null，如果是则抛出异常
      *
      * @param parameter
      * @return
@@ -103,13 +116,24 @@ public abstract class OGNL {
                 if (parameter instanceof Example) {
                     List<Example.Criteria> criteriaList = ((Example) parameter).getOredCriteria();
                     if (criteriaList != null && criteriaList.size() > 0) {
-                        return true;
+                        for (Example.Criteria criteria : criteriaList) {
+                            if (criteria != null && criteria.isValid()) {
+                                return true;
+                            }
+                        }
                     }
                 } else {
                     Method getter = parameter.getClass().getDeclaredMethod("getOredCriteria");
                     Object list = getter.invoke(parameter);
-                    if(list != null && list instanceof List && ((List) list).size() > 0){
-                        return true;
+                    if (list != null && list instanceof List) {
+                        List criteriaList = (List) list;
+                        if (criteriaList.size() > 0) {
+                            for (Object criteria : criteriaList) {
+                                if (criteria instanceof Example.Criteria && ((Example.Criteria) criteria).isValid()) {
+                                    return true;
+                                }
+                            }
+                        }
                     }
                 }
             } catch (Exception e) {
@@ -207,10 +231,63 @@ public abstract class OGNL {
             return ((Example.Criteria) parameter).getAndOr();
         } else if (parameter instanceof Example.Criterion) {
             return ((Example.Criterion) parameter).getAndOr();
-        } else if (parameter.getClass().getCanonicalName().endsWith("Criteria")) {
+        } else if (parameter.getClass().getName().endsWith("Criteria")) {
             return "or";
         } else {
             return "and";
         }
     }
+
+    /**
+     * 拼接逻辑删除字段的未删除查询条件
+     *
+     * @param parameter
+     * @return
+     */
+    public static String andNotLogicDelete(Object parameter) {
+        String result = "";
+        if (parameter instanceof Example) {
+            Example example = (Example) parameter;
+            Map<String, EntityColumn> propertyMap = example.getPropertyMap();
+
+            for (Map.Entry<String, EntityColumn> entry : propertyMap.entrySet()) {
+                EntityColumn column = entry.getValue();
+                if (column.getEntityField().isAnnotationPresent(LogicDelete.class)) {
+                    // 未逻辑删除的条件
+                    Integer logicDeletedValue = SqlHelper.getLogicDeletedValue(column, false);
+                    if(logicDeletedValue==null){
+                        result = column.getColumn() + " is null ";
+                    }else {
+                        result = column.getColumn() + " = " + logicDeletedValue;
+                    }
+
+                    // 如果Example中有条件，则拼接" and "，
+                    // 如果是空的oredCriteria，则where中只有逻辑删除注解的未删除条件
+                    if (hasWhereCause(example)) {
+                        result += " and ";
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 检查是否存在where条件，存在返回true，不存在返回false.
+     *
+     * @param example
+     * @return
+     */
+    private static boolean hasWhereCause(Example example) {
+        if (example.getOredCriteria() == null || example.getOredCriteria().size() == 0) {
+            return false;
+        }
+        for (Example.Criteria oredCriterion : example.getOredCriteria()) {
+            if (oredCriterion.getAllCriteria().size() != 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

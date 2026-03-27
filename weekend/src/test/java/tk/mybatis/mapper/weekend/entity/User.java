@@ -25,14 +25,14 @@
 
 package tk.mybatis.mapper.weekend.entity;
 
-import javax.persistence.Table;
+import jakarta.persistence.Table;
 
 /**
  * @author Frank
  */
 @Table(name = "user")
 public class User {
-    private Long   id;
+    private Long id;
     private String userName;
 
     public Long getId() {

@@ -4,6 +4,7 @@ import org.apache.ibatis.mapping.ResultMap;
 import org.apache.ibatis.mapping.ResultMapping;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.type.BlobTypeHandler;
+import org.apache.ibatis.type.EnumOrdinalTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.StringTypeHandler;
 import org.junit.Assert;
@@ -27,7 +28,7 @@ public class ColumnTypeTest {
     private Configuration configuration;
 
     @Before
-    public void beforeTest(){
+    public void beforeTest() {
         config = new Config();
         config.setStyle(Style.normal);
 
@@ -40,7 +41,7 @@ public class ColumnTypeTest {
     }
 
     @Test
-    public void testColumn(){
+    public void testColumn() {
         EntityHelper.initEntityNameMap(UserColumn.class, config);
         EntityTable entityTable = EntityHelper.getEntityTable(UserColumn.class);
         Assert.assertNotNull(entityTable);
@@ -79,7 +80,7 @@ public class ColumnTypeTest {
     }
 
     @Test
-    public void testJdbcTypeVarchar(){
+    public void testJdbcTypeVarchar() {
         EntityHelper.initEntityNameMap(UserJdbcTypeVarchar.class, config);
         EntityTable entityTable = EntityHelper.getEntityTable(UserJdbcTypeVarchar.class);
         Assert.assertNotNull(entityTable);
@@ -119,7 +120,7 @@ public class ColumnTypeTest {
     }
 
     @Test
-    public void testJdbcTypeBlob(){
+    public void testJdbcTypeBlob() {
         EntityHelper.initEntityNameMap(UserJdbcTypeBlob.class, config);
         EntityTable entityTable = EntityHelper.getEntityTable(UserJdbcTypeBlob.class);
         Assert.assertNotNull(entityTable);
@@ -159,7 +160,7 @@ public class ColumnTypeTest {
     }
 
     @Test
-    public void testTypehandler(){
+    public void testTypehandler() {
         EntityHelper.initEntityNameMap(UserTypehandler.class, config);
         EntityTable entityTable = EntityHelper.getEntityTable(UserTypehandler.class);
         Assert.assertNotNull(entityTable);
@@ -192,13 +193,57 @@ public class ColumnTypeTest {
         Assert.assertEquals(BlobTypeHandler.class, resultMapping.getTypeHandler().getClass());
     }
 
+    enum UserEnum {
+        A, B
+    }
+
+    class UserEnumOrdinalTypeHandler {
+        @ColumnType(typeHandler = EnumOrdinalTypeHandler.class)
+        private UserEnum name;
+    }
+
+    @Test
+    public void testEnumOrdinalTypeHandler() {
+        EntityHelper.initEntityNameMap(UserEnumOrdinalTypeHandler.class, config);
+        EntityTable entityTable = EntityHelper.getEntityTable(UserEnumOrdinalTypeHandler.class);
+        Assert.assertNotNull(entityTable);
+
+        Set<EntityColumn> columns = entityTable.getEntityClassColumns();
+        Assert.assertEquals(1, columns.size());
+
+        for (EntityColumn column : columns) {
+            Assert.assertEquals("name", column.getColumn());
+            Assert.assertEquals("name", column.getProperty());
+
+            Assert.assertEquals("name = #{name, typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}", column.getColumnEqualsHolder());
+            Assert.assertEquals("name = #{record.name, typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}", column.getColumnEqualsHolder("record"));
+            Assert.assertEquals("#{name, typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}", column.getColumnHolder());
+            Assert.assertEquals("#{record.name, typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}", column.getColumnHolder("record"));
+            Assert.assertEquals("#{record.name, typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}", column.getColumnHolder("record", "suffix"));
+            Assert.assertEquals("#{record.namesuffix, typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},", column.getColumnHolder("record", "suffix", ","));
+            Assert.assertNotNull(column.getTypeHandler());
+        }
+
+        ResultMap resultMap = entityTable.getResultMap(configuration);
+        Assert.assertEquals("[NAME]", resultMap.getMappedColumns().toString());
+
+        Assert.assertEquals(1, resultMap.getResultMappings().size());
+
+        ResultMapping resultMapping = resultMap.getResultMappings().get(0);
+        Assert.assertEquals("name", resultMapping.getColumn());
+        Assert.assertEquals("name", resultMapping.getProperty());
+        Assert.assertNull(resultMapping.getJdbcType());
+        Assert.assertEquals(EnumOrdinalTypeHandler.class, resultMapping.getTypeHandler().getClass());
+    }
+
+
     class UserAll {
         @ColumnType(column = "user_name", jdbcType = JdbcType.BLOB, typeHandler = BlobTypeHandler.class)
         private String name;
     }
 
     @Test
-    public void testAll(){
+    public void testAll() {
         EntityHelper.initEntityNameMap(UserAll.class, config);
         EntityTable entityTable = EntityHelper.getEntityTable(UserAll.class);
         Assert.assertNotNull(entityTable);
